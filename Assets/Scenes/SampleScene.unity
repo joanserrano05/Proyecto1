@@ -225,7 +225,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 6
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -504,12 +504,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bab529ba5d6cb414fbc1e89c648db9b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneController
-  originalTopo: {fileID: 3589120167140019276, guid: 0ede72df32c3496448d7ab7992bd16c5, type: 3}
+  originalTopo: {fileID: 4372174113151356816, guid: 8ca67adcecedde2428623db3a98464f0, type: 3}
   scoreLabel: {fileID: 0}
-  gridRows: 2
-  gridCols: 4
-  header: 2
-  margin: 1
+  gridRows: 3
+  gridCols: 3
+  header: 0
+  margin: 0
+  tiempoPartida: 120
+  objetosAleatoriosPrefabs:
+  - {fileID: 9064569717375224328, guid: 446ac5ccca24a7e4fb1fee6964174e21, type: 3}
+  - {fileID: 7424173320599372339, guid: 7d012fad16e23d04497f1ee796734bbe, type: 3}
+  - {fileID: 3087917254794582739, guid: c5bcb7098d7bec04f966d763724c2889, type: 3}
+  tiempoMinSpawn: 2
+  tiempoMaxSpawn: 5
 --- !u!4 &1304539548
 Transform:
   m_ObjectHideFlags: 0
@@ -611,8 +618,8 @@ Transform:
   m_GameObject: {fileID: 1701206533}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.17122215, y: 0.49585912, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.17122, y: 0.49586, z: 0}
+  m_LocalScale: {x: -1.5557363, y: -1.5557363, z: -1.5557363}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -631,6 +638,7 @@ GameObject:
   - component: {fileID: 2136943458}
   - component: {fileID: 2136943462}
   - component: {fileID: 2136943463}
+  - component: {fileID: 2136943464}
   m_Layer: 0
   m_Name: Personaje
   m_TagString: Untagged
@@ -815,6 +823,26 @@ MonoBehaviour:
   radioDeGolpe: 1.5
   teclaAtaque: 32
   animador: {fileID: 918311906}
+--- !u!114 &2136943464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136943457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd14eeedf4c48cf418a3e75765ba02cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EfectosJugador
+  esInmune: 0
+  tieneFuego: 0
+  multiplicadorVelocidad: 1.5
+  duracionEstrella: 5
+  duracionHielo: 2
+  duracionFuego: 10
+  prefabBolaFuego: {fileID: 4078226629036225382, guid: 6b34795816f7a184e8fcbd6f12c6cc12, type: 3}
+  velocidadBolaFuego: 8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
