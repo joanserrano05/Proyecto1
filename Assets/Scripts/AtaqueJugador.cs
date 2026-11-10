@@ -6,8 +6,12 @@ public class AtaqueJugador : MonoBehaviour
     public float radioDeGolpe = 1.5f;
     public KeyCode teclaAtaque = KeyCode.Space;
 
-    [Header("Visuales")]
-    public Animator animador; // Referencia para controlar la animación
+    private Animator animador; 
+
+    void Start()
+    {
+        animador = GetComponent<Animator>();
+    }
 
     void Update()
     {
@@ -19,22 +23,23 @@ public class AtaqueJugador : MonoBehaviour
 
     private void DarMartillazo()
     {
-        // 1. Reproducir la animación visual del golpe
         if (animador != null)
         {
             animador.SetTrigger("Atacar");
         }
 
-        // 2. Lógica de físicas (detectar a los topos)
         Collider2D[] objetoGolpeado = Physics2D.OverlapCircleAll(transform.position, radioDeGolpe);
 
         foreach (Collider2D objeto in objetoGolpeado)
         {
             Topo topoDetectado = objeto.GetComponent<Topo>();
+            if (topoDetectado != null) topoDetectado.RecibirGolpe();
 
-            if (topoDetectado != null)
+            Enemigos enemigoGolpeado = objeto.GetComponent<Enemigos>();
+            if (enemigoGolpeado != null)
             {
-                topoDetectado.RecibirGolpe();
+                Puntuacion.Instancia.ProcesarEnemigo(enemigoGolpeado.tipoDeEnemigo);
+                Destroy(enemigoGolpeado.gameObject);
             }
         }
     }

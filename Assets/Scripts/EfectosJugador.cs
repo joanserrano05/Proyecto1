@@ -38,7 +38,6 @@ public class EfectosJugador : MonoBehaviour
         }
     }
     
-    // Nota: Asumo que llamaste a tu script de los objetos "objetos" en lugar de "ObjetoMario"
     public void AplicarEfecto(objetos.TipoObjeto tipo) 
     {
         switch (tipo)
@@ -59,7 +58,6 @@ public class EfectosJugador : MonoBehaviour
     {
         esInmune = true;
         movimiento.velocidad = velocidad * multiplicadorVelocidad;
-        // CORREGIDO: spriteRenderer en minúscula
         spriteRenderer.color = Color.yellow; 
 
         yield return new WaitForSeconds(duracionEstrella);

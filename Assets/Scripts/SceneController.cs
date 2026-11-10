@@ -1,45 +1,51 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SceneController : MonoBehaviour
 {
     [Header("Referencias")]
     [SerializeField] private Topo originalTopo;
-    [SerializeField] private TextMesh scoreLabel;
+
+    [Header("Áreas de Juego (Ajustar en el Editor)")]
+    public Vector2 tamanoCuadricula = new Vector2(14f, 7f); // NUEVO: Para separar los tubos (Recuadro Verde)
+    public Vector2 tamanoMapa = new Vector2(12f, 7f);       // Para los objetos aleatorios (Recuadro Amarillo)
+    public Vector2 centroMapa = new Vector2(0f, 0f);        // Mueve ambas zonas a la vez
 
     [Header("Configuración de la Cuadrícula")]
-    public int gridRows = 2;
-    public int gridCols = 4;
-    public float header = 2f;
-    public float margin = 1f;
+    public int gridRows = 3;
+    public int gridCols = 3;
 
     [Header("Temporizador")]
-
     public float tiempoPartida = 120f;
     private bool juegoTerminado = false;
 
-    [Header("Objetos Aleatorios")]
+    [Header("Objetos Aleatorios (Estrella, Flores)")]
     public GameObject[] objetosAleatoriosPrefabs;
     public float tiempoMinSpawn = 2f;
     public float tiempoMaxSpawn = 5f;
 
+    [Header("Enemigos en Tubos")]
+    public GameObject[] enemigosPrefabs;
+    public float tiempoMinSpawnEnemigo = 1f;
+    public float tiempoMaxSpawnEnemigo = 3f;
+
     private float limiteX;
     private float limiteY;
-
-    private int _score = 0;
+    
+    private List<Topo> listaTubos = new List<Topo>();
 
     void Start()
     {
-        // Calculamos el tamaño de la pantalla según la cámara
-        float totalheight = Camera.main.orthographicSize * 2;
-        float totalwidth = totalheight * Camera.main.aspect;
-        
-        limiteX = (totalwidth/2) - margin;
-        limiteY = (totalheight/2) - margin;
+        // Los límites de colisión se siguen basando en la zona de objetos aleatorios
+        limiteX = tamanoMapa.x / 2f;
+        limiteY = tamanoMapa.y / 2f;
 
-        GenerarCuadricula(totalwidth, totalheight);
+        GenerarCuadricula();
+        
         StartCoroutine(GenerarObjetos());
+        StartCoroutine(GenerarEnemigosEnTubos());
     }
 
     void Update()
@@ -48,24 +54,38 @@ public class SceneController : MonoBehaviour
         {
             tiempoPartida -= Time.deltaTime;
 
-            if (scoreLabel!= null)
-            {
-                scoreLabel.text = "Tiempo: " + Mathf.Ceil(tiempoPartida).ToString();
-            }
-
-            if (tiempoPartida<=0)
+            if (tiempoPartida <= 0)
             {
                 FinDePartida();
             }
         }    
     }
 
-    private void FinDePartida()
+    public void FinDePartida()
     {
         juegoTerminado = true;
         tiempoPartida = 0;
-
         Debug.Log("Tiempo agotado. FIN DE PARTIDA");
+    }
+
+    private IEnumerator GenerarEnemigosEnTubos()
+    {
+        while (!juegoTerminado)
+        {
+            float tiempoEspera = Random.Range(tiempoMinSpawnEnemigo, tiempoMaxSpawnEnemigo);
+            yield return new WaitForSeconds(tiempoEspera);
+
+            if (!juegoTerminado && enemigosPrefabs.Length > 0 && listaTubos.Count > 0)
+            {
+                int indiceTubo = Random.Range(0, listaTubos.Count);
+                Topo tuboElegido = listaTubos[indiceTubo];
+
+                int indiceEnemigo = Random.Range(0, enemigosPrefabs.Length);
+                GameObject prefabEnemigo = enemigosPrefabs[indiceEnemigo];
+
+                Instantiate(prefabEnemigo, tuboElegido.transform.position, Quaternion.identity);
+            }
+        }
     }
 
     private IEnumerator GenerarObjetos()
@@ -81,7 +101,7 @@ public class SceneController : MonoBehaviour
         }
     }
 
-private void GenerarObjetosEnMapa()
+    private void GenerarObjetosEnMapa()
     {
         int indiceAleatorio = Random.Range(0, objetosAleatoriosPrefabs.Length);
         GameObject prefab = objetosAleatoriosPrefabs[indiceAleatorio];
@@ -91,21 +111,18 @@ private void GenerarObjetosEnMapa()
         
         int intentos = 0;
         int maxIntentos = 15; 
-        float radioObjeto = 0.7f; // Tamaño del área libre que necesita el objeto
+        float radioObjeto = 0.7f; 
 
-        // Bucle que intenta buscar una posición vacía varias veces
         while (!posicionValida && intentos < maxIntentos)
         {
-            float posX = Random.Range(-limiteX, limiteX);
-            float posY = Random.Range(-limiteY, limiteY);
+            float posX = centroMapa.x + Random.Range(-limiteX, limiteX);
+            float posY = centroMapa.y + Random.Range(-limiteY, limiteY);
             Vector2 posicionAleatoria = new Vector2(posX, posY);
 
-            // Traza un círculo imaginario y detecta si choca con algún Collider2D (ej. los tubos)
             Collider2D colision = Physics2D.OverlapCircle(posicionAleatoria, radioObjeto);
 
             if (colision == null)
             {
-                // Si colision devuelve null, significa que ese espacio está limpio
                 posicionFinal = new Vector3(posX, posY, 0f);
                 posicionValida = true;
             }
@@ -113,48 +130,47 @@ private void GenerarObjetosEnMapa()
             intentos++;
         }
 
-        // Solo instanciamos el objeto si realmente hemos encontrado un hueco libre
         if (posicionValida)
         {
             Instantiate(prefab, posicionFinal, Quaternion.identity);
         }
     }
 
-
-    private void GenerarCuadricula(float totalwidth, float totalheight)
+    private void GenerarCuadricula()
     {
-        // Calculamos el espacio disponible para cada topo
-        float spacewidth = (totalwidth - 2 * margin) / gridCols;
-        float spaceheight = (totalheight - header - margin) / gridRows;
-
-        int topoID = 0; // Un identificador único para cada agujero (opcional, pero útil)
+        // AHORA USAMOS tamanoCuadricula PARA CALCULAR LA SEPARACIÓN DE LOS TUBOS
+        float spacewidth = tamanoCuadricula.x / gridCols;
+        float spaceheight = tamanoCuadricula.y / gridRows;
+        int topoID = 0; 
 
         for (int j = 0; j < gridRows; j++)
         {
             for (int i = 0; i < gridCols; i++)
             {
-                // Instanciamos el topo
-                Topo topo = Instantiate(originalTopo);
+                if (i == 1 && j == 1) continue; 
 
-                // Calculamos su posición en la cuadrícula
-                float posX = (i + 0.5f) * spacewidth - totalwidth / 2 + margin;
-                float posY = (j + 0.5f) * spaceheight - totalheight / 2 + margin;
+                Topo topo = Instantiate(originalTopo);
+                
+                float posX = centroMapa.x - (tamanoCuadricula.x / 2f) + (i + 0.5f) * spacewidth;
+                float posY = centroMapa.y - (tamanoCuadricula.y / 2f) + (j + 0.5f) * spaceheight;
                 
                 topo.transform.position = new Vector3(posX, posY, originalTopo.transform.position.z);
-                
-                // Nombramos el objeto en la jerarquía para mantener el orden
                 topo.name = $"Topo_{topoID}";
                 
-                // Si tienes una función en tu script Topo para inicializarlo, la llamarías aquí.
-                // Ejemplo: topo.Inicializar(topoID);
-
+                listaTubos.Add(topo);
                 topoID++;
             }
         }
     }
 
-    public void Restart()
+    private void OnDrawGizmosSelected()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        // Recuadro Amarillo: Área segura para que aparezcan las flores y estrellas
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(centroMapa, tamanoMapa);
+
+        // Recuadro Verde: Área donde se distribuyen los tubos
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube(centroMapa, tamanoCuadricula);
     }
 }
