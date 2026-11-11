@@ -6,6 +6,10 @@ public class EfectosJugador : MonoBehaviour
     private movimiento_personaje movimiento;
     private SpriteRenderer spriteRenderer;
     private float velocidad;
+    
+    // 1. SOLUCIÓN: Declaramos las variables que faltaban
+    private AtaqueJugador martillo;
+    private float tiempoDeEspera; 
 
     [Header("Estado Actual")]
     public bool esInmune = false;
@@ -26,7 +30,10 @@ public class EfectosJugador : MonoBehaviour
     void Start()
     {
         movimiento = GetComponent<movimiento_personaje>();
+        martillo = GetComponent<AtaqueJugador>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        
+        tiempoDeEspera = martillo.tiempoDeEspera;
         velocidad = movimiento.velocidad;
     }
 
@@ -58,13 +65,15 @@ public class EfectosJugador : MonoBehaviour
     {
         esInmune = true;
         movimiento.velocidad = velocidad * multiplicadorVelocidad;
+        martillo.tiempoDeEspera = tiempoDeEspera / multiplicadorVelocidad;
         spriteRenderer.color = Color.yellow; 
 
         yield return new WaitForSeconds(duracionEstrella);
 
         esInmune = false;
         movimiento.velocidad = velocidad;
-        // CORREGIDO: Añadido el .color
+        // 2. SOLUCIÓN: Devolvemos la velocidad del martillo a la normalidad
+        martillo.tiempoDeEspera = tiempoDeEspera; 
         spriteRenderer.color = Color.white; 
     }
 
